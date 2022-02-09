@@ -1,6 +1,6 @@
 # pixar-renderer
 
-## Сборка
+### Сборка
 ```bash
 sh build.sh
 ```
