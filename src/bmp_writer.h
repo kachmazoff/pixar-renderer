@@ -1,111 +1,153 @@
-#ifndef BMP_WRITER_H
-#define BMP_WRITER_H
-
-#include <cstdio>
+#include <stdio.h>
+#include <thread>
+#include <chrono>
 #include <vector>
-#include <string>
-#include <cassert>
-#include <cmath>
 
-struct Color{
-	Color(){
-		R = 0;
-		G = 0;
-		B = 0;
-	}
-	template<typename T>
-	Color(T a, T b, T c){
-		R = a > 255 ? 255 : (double)a;
-		R = R < 0 ? 0 : R;
-		
-		G = b > 255 ? 255 : (double)b;
-		G = G < 0 ? 0 : G;
-		
-		B = c > 255 ? 255 : (double)c;
-		B = B < 0 ? 0 : B;
-	}
+using namespace std;
 
-	/*	Allows Color operations as well as ensures that colors are in range [0, 255] after every operation. Uncomment to use 
-	Color operator + (Color c){return Color(R+c.R, G+c.G, B+c.B);}
-	Color operator - (Color c){return Color(R-c.R, G-c.G, B-c.B);}
-	Color operator * (Color c){return Color(R*c.R, G*c.G, B*c.B);}
-	Color operator / (Color c){return Color(R/c.R, G/c.G, B/c.B);}
-	template<typename T>
-	Color operator + (T x){return Color(R+x, G+x, B+x);}
-	template<typename T>
-	Color operator - (T x){return Color(R-x, G-x, B-x);}
-	template<typename T>
-	Color operator * (T x){return Color(R*x, G*x, B*x);}
-	template<typename T>
-	Color operator / (T x){return Color(R/x, G/x, B/x);}
-	*/
+const int BYTES_PER_PIXEL = 3; /// red, green, & blue
+const int FILE_HEADER_SIZE = 14;
+const int INFO_HEADER_SIZE = 40;
 
-	double R;
-	double G;
-	double B;
-};
+void saveBitmapImage(unsigned char* image, int height, int width, char* imageFileName);
+void saveBitmapImage(const vector<vector<uint> >& image, char* imageFileName);
+unsigned char* createBitmapFileHeader(int height, int stride);
+unsigned char* createBitmapInfoHeader(int height, int width);
 
-void write_bmp(const std::string &filename, const unsigned &dpi, const std::vector<std::vector<Color> > &grid){
-	if(!(filename.find(".bmp") == filename.size() - 4))
-		printf("WARNING! Filename doesn't have BMP extension\n");
+void saveBitmapImage(const vector<vector<uint> >& image, char* imageFileName) {
+    const int height = image.size();
+    const int width = image[0].size();
 
-	FILE* f;
-	f = fopen(filename.c_str(), "wb");
+    int widthInBytes = width * BYTES_PER_PIXEL;
 
-	unsigned h = grid.size();
-	unsigned w = grid[0].size();
+    unsigned char padding[3] = {0, 0, 0};
+    int paddingSize = (4 - (widthInBytes) % 4) % 4;
 
-	unsigned s = 4*w*h;
-	unsigned filesize = 54 + s;
+    int stride = (widthInBytes) + paddingSize;
 
-	unsigned ppm = dpi * 39.375;
+    FILE* imageFile = fopen(imageFileName, "wb");
 
-	unsigned char file_header[14] = {'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0};
-	unsigned char info_header[40] = {40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0};
+    unsigned char* fileHeader = createBitmapFileHeader(height, stride);
+    fwrite(fileHeader, 1, FILE_HEADER_SIZE, imageFile);
 
-	// File Header
-	file_header[2] = filesize;
-	file_header[3] = filesize>>8;
-	file_header[4] = filesize>>16;
-	file_header[5] = filesize>>24;
-	
-	// Info Header
-	info_header[4] = w;
-	info_header[5] = w>>8;
-	info_header[6] = w>>16;
-	info_header[7] = w>>24;
+    unsigned char* infoHeader = createBitmapInfoHeader(height, width);
+    fwrite(infoHeader, 1, INFO_HEADER_SIZE, imageFile);
 
-	info_header[8] = h;
-	info_header[9] = h>>8;
-	info_header[10] = h>>16;
-	info_header[11] = h>>24;
+    int i;
+    for (i = 0; i < height; i++) {
+        unsigned char row[width][BYTES_PER_PIXEL];
+        // unsigned char* row = new unsigned char[BYTES_PER_PIXEL * width];
+        for (int x = 0; x < width; ++x) {
+            row[x][2] = (unsigned char)((image[i][x] >> 16) & 255);
+            row[x][1] = (unsigned char)((image[i][x] >> 8) & 255);
+            row[x][0] = (unsigned char)((image[i][x]) & 255);
+        }
+        // for (int x = 0; x < width * BYTES_PER_PIXEL; ++x) {
+        //     row[x] = (char)((image[i][x / BYTES_PER_PIXEL] >> (8 * (x % BYTES_PER_PIXEL))) & 255);
+        // }
+            if (i == 0) {
+        for (int x = 0; x < width * BYTES_PER_PIXEL; x += 3) {
+                // cout << image[i][x / BYTES_PER_PIXEL] << " ";
+                // cout << row[x] * 1 << " ";
+                // cout << row[x / BYTES_PER_PIXEL] * 1 << " ";
+                // cout << (char)(row[x] >> (8 * (x % BYTES_PER_PIXEL))) << " ";
+        }
+        // cout << endl << endl;
+        for (int x = 1; x < width * BYTES_PER_PIXEL; x += 3) {
+                // cout << image[i][x / BYTES_PER_PIXEL] << " ";
+                // cout << row[x] * 1 << " ";
+                // cout << row[x / BYTES_PER_PIXEL] * 1 << " ";
+                // cout << (char)(row[x] >> (8 * (x % BYTES_PER_PIXEL))) << " ";
+        }
+        // cout << endl << endl;
+        for (int x = 2; x < width * BYTES_PER_PIXEL; x += 3) {
+                // cout << image[i][x / BYTES_PER_PIXEL] << " ";
+                // cout << row[x] * 1 << " ";
+                // cout << row[x / BYTES_PER_PIXEL] * 1 << " ";
+                // cout << (char)(row[x] >> (8 * (x % BYTES_PER_PIXEL))) << " ";
+            }
+        // cout << endl << endl;
+        }
+        fwrite(row, BYTES_PER_PIXEL, width, imageFile);
+        fwrite(padding, 1, paddingSize, imageFile);
+    }
+    // cout << endl;
 
-	info_header[21] = s;
-	info_header[22] = s>>8;
-	info_header[23] = s >> 16;
-	info_header[24] = s>>24;
-
-	info_header[25] = ppm;
-	info_header[26] = ppm>>8;
-	info_header[27] = ppm>>16;
-	info_header[28] = ppm>>24;
-	
-	info_header[29] = info_header[25];
-	info_header[30] = info_header[26];
-	info_header[31] = info_header[27];
-	info_header[32] = info_header[28];
-
-	fwrite(file_header, 1, 14, f);
-	fwrite(info_header, 1, 40, f);
-
-	// Writing grid values
-	for(unsigned i = 0; i < h; i++){
-		for(unsigned j = 0; j < w; j++){
-			unsigned char col[3] = {floor(grid[i][j].B), floor(grid[i][j].G), floor(grid[i][j].R)};
-			fwrite(col, 1, 3, f);
-		}
-	}
-	fclose(f);
+    fclose(imageFile);
 }
 
-#endif
+void saveBitmapImage (unsigned char* image, int height, int width, char* imageFileName) {
+    int widthInBytes = width * BYTES_PER_PIXEL;
+
+    unsigned char padding[3] = {0, 0, 0};
+    int paddingSize = (4 - (widthInBytes) % 4) % 4;
+
+    int stride = (widthInBytes) + paddingSize;
+
+    FILE* imageFile = fopen(imageFileName, "wb");
+
+    unsigned char* fileHeader = createBitmapFileHeader(height, stride);
+    fwrite(fileHeader, 1, FILE_HEADER_SIZE, imageFile);
+
+    unsigned char* infoHeader = createBitmapInfoHeader(height, width);
+    fwrite(infoHeader, 1, INFO_HEADER_SIZE, imageFile);
+
+    int i;
+    for (i = 0; i < height; i++) {
+        fwrite(image + (i*widthInBytes), BYTES_PER_PIXEL, width, imageFile);
+        fwrite(padding, 1, paddingSize, imageFile);
+    }
+
+    fclose(imageFile);
+}
+
+unsigned char* createBitmapFileHeader (int height, int stride) {
+    int fileSize = FILE_HEADER_SIZE + INFO_HEADER_SIZE + (stride * height);
+
+    static unsigned char fileHeader[] = {
+        0,0,     /// signature
+        0,0,0,0, /// image file size in bytes
+        0,0,0,0, /// reserved
+        0,0,0,0, /// start of pixel array
+    };
+
+    fileHeader[ 0] = (unsigned char)('B');
+    fileHeader[ 1] = (unsigned char)('M');
+    fileHeader[ 2] = (unsigned char)(fileSize      );
+    fileHeader[ 3] = (unsigned char)(fileSize >>  8);
+    fileHeader[ 4] = (unsigned char)(fileSize >> 16);
+    fileHeader[ 5] = (unsigned char)(fileSize >> 24);
+    fileHeader[10] = (unsigned char)(FILE_HEADER_SIZE + INFO_HEADER_SIZE);
+
+    return fileHeader;
+}
+
+unsigned char* createBitmapInfoHeader (int height, int width) {
+    static unsigned char infoHeader[] = {
+        0,0,0,0, /// header size
+        0,0,0,0, /// image width
+        0,0,0,0, /// image height
+        0,0,     /// number of color planes
+        0,0,     /// bits per pixel
+        0,0,0,0, /// compression
+        0,0,0,0, /// image size
+        0,0,0,0, /// horizontal resolution
+        0,0,0,0, /// vertical resolution
+        0,0,0,0, /// colors in color table
+        0,0,0,0, /// important color count
+    };
+
+    infoHeader[ 0] = (unsigned char)(INFO_HEADER_SIZE);
+    infoHeader[ 4] = (unsigned char)(width      );
+    infoHeader[ 5] = (unsigned char)(width >>  8);
+    infoHeader[ 6] = (unsigned char)(width >> 16);
+    infoHeader[ 7] = (unsigned char)(width >> 24);
+    infoHeader[ 8] = (unsigned char)(height      );
+    infoHeader[ 9] = (unsigned char)(height >>  8);
+    infoHeader[10] = (unsigned char)(height >> 16);
+    infoHeader[11] = (unsigned char)(height >> 24);
+    infoHeader[12] = (unsigned char)(1);
+    infoHeader[14] = (unsigned char)(BYTES_PER_PIXEL*8);
+
+    return infoHeader;
+}
