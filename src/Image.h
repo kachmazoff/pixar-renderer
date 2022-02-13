@@ -33,6 +33,9 @@ public:
     }
 
     void set_pixel(int x, int y, const color& c) {
+        if (x < 0 || x >= _width || y < 0 || y >= _height) {
+            return;
+        }
         this->_arr[y][x] = c.value;
     }
 

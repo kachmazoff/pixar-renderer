@@ -11,9 +11,9 @@ private:
 
 public:
     Point(float x, float y, float z) : _x(x), _y(y), _z(z){};
-    float x() { return _x; }
-    float y() { return _y; }
-    float z() { return _z; }
+    float x() const { return _x; }
+    float y() const { return _y; }
+    float z() const { return _z; }
 };
 
 class Face
@@ -23,7 +23,7 @@ private:
 
 public:
     Face(vector<int> pointNums) : _pointNums(pointNums){};
-    vector<int> getPointNums() { return _pointNums; }
+    const vector<int>& getPointNums() { return _pointNums; }
 };
 
 class ObjModel
