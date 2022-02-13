@@ -20,7 +20,7 @@ void drawStar(Image &image, Liner &liner)
 
 int main() {
     Image image(200);
-    SteepLiner liner = SteepLiner();
+    BresenhamLiner liner = BresenhamLiner();
     drawStar(image, liner);
     image.save("prikol.bmp");
 
