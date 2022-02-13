@@ -12,7 +12,8 @@ using namespace std;
 void drawStar(Image &image, Liner &liner)
 {
     int x0 = image.width() / 2, y0 = image.height() / 2;
-    for (size_t i = 0; i < 12; ++i) {
+    for (size_t i = 0; i < 12; ++i)
+    {
         float alpha = 2 * M_PI * i / 13;
 
         int x1 = x0 + image.width() / 2 * 0.95 * cos(alpha),
@@ -22,25 +23,28 @@ void drawStar(Image &image, Liner &liner)
     }
 }
 
-int main() {
+int main()
+{
     Image image(200);
     BresenhamLiner liner = BresenhamLiner();
     drawStar(image, liner);
     image.save("prikol.bmp");
 
-    ObjModel model("obj/StormTrooper.obj");
+    ObjModel model("obj/human_triang.obj");
     Image result_image(512);
 
     const int CAM_X_OFFSET = 512 / 2;
     const int CAM_Y_OFFSET = 512 / 2;
-    const int ZOOM = 120;
+    const int ZOOM = 1000;
 
     std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
 
-    for (size_t f = 0; f < model.faces.size(); ++f) {
-        const vector<int>& pointNums = model.faces[f].getPointNums();
+    for (size_t f = 0; f < model.faces.size(); ++f)
+    {
+        const vector<int> &pointNums = model.faces[f].getPointNums();
 
-        for (size_t p = 0; p < model.faces[f].getPointNums().size(); ++p) {
+        for (size_t p = 0; p < model.faces[f].getPointNums().size(); ++p)
+        {
             uint start_point_index = pointNums[p];
             uint end_point_index = pointNums[(p + 1) % pointNums.size()];
 
@@ -52,8 +56,7 @@ int main() {
                 start_point.y() * ZOOM + CAM_Y_OFFSET,
                 end_point.x() * ZOOM + CAM_X_OFFSET,
                 end_point.y() * ZOOM + CAM_Y_OFFSET,
-                result_image
-            );
+                result_image);
         }
     }
 
