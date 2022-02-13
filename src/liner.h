@@ -1,4 +1,6 @@
 #include <iostream>
+#include "./colors.h"
+
 using namespace std;
 
 class Liner
@@ -22,7 +24,7 @@ public:
         {
             int x = x0 * (1. - t) + x1 * t;
             int y = y0 * (1. - t) + y1 * t;
-            image.set_pixel(x, y, 255, 255, 255);
+            image.set_pixel(x, y, white);
         }
     }
 };
@@ -36,7 +38,7 @@ public:
         {
             float t = float(x - x0) / (x1 - x0);
             int y = y0 * (1. - t) + y1 * t;
-            image.set_pixel(x, y, 255, 255, 255);
+            image.set_pixel(x, y, white);
         }
     }
 };
@@ -95,9 +97,8 @@ public:
             err = 0,
             derr = abs(dy) * 2;
 
-        for (x; x < x1; ++x)
-        {
-            steep ? image.set_pixel(y, x, 255, 255, 255) : image.set_pixel(x, y, 255, 255, 255);
+        while (x++ < x1) {
+            steep ? image.set_pixel(y, x, green) : image.set_pixel(x, y, green);
             err += derr;
             if (err > dx)
             {

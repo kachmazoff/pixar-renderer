@@ -1,4 +1,5 @@
 #include "./bmp_writer.h"
+#include "./colors.h"
 
 class Image {
 private:
@@ -29,6 +30,10 @@ public:
         uint res = (r << 16) | (g << 8) | b;
         // this->_arr[_height - y - 1][x] = res;
         this->_arr[y][x] = res;
+    }
+
+    void set_pixel(int x, int y, const color& c) {
+        this->_arr[y][x] = c.value;
     }
 
     void save(string filename) {
