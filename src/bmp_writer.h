@@ -36,42 +36,15 @@ void saveBitmapImage(const vector<vector<uint> >& image, char* imageFileName) {
     int i;
     for (i = 0; i < height; i++) {
         unsigned char row[width][BYTES_PER_PIXEL];
-        // unsigned char* row = new unsigned char[BYTES_PER_PIXEL * width];
+
         for (int x = 0; x < width; ++x) {
             row[x][2] = (unsigned char)((image[i][x] >> 16) & 255);
             row[x][1] = (unsigned char)((image[i][x] >> 8) & 255);
             row[x][0] = (unsigned char)((image[i][x]) & 255);
         }
-        // for (int x = 0; x < width * BYTES_PER_PIXEL; ++x) {
-        //     row[x] = (char)((image[i][x / BYTES_PER_PIXEL] >> (8 * (x % BYTES_PER_PIXEL))) & 255);
-        // }
-            if (i == 0) {
-        for (int x = 0; x < width * BYTES_PER_PIXEL; x += 3) {
-                // cout << image[i][x / BYTES_PER_PIXEL] << " ";
-                // cout << row[x] * 1 << " ";
-                // cout << row[x / BYTES_PER_PIXEL] * 1 << " ";
-                // cout << (char)(row[x] >> (8 * (x % BYTES_PER_PIXEL))) << " ";
-        }
-        // cout << endl << endl;
-        for (int x = 1; x < width * BYTES_PER_PIXEL; x += 3) {
-                // cout << image[i][x / BYTES_PER_PIXEL] << " ";
-                // cout << row[x] * 1 << " ";
-                // cout << row[x / BYTES_PER_PIXEL] * 1 << " ";
-                // cout << (char)(row[x] >> (8 * (x % BYTES_PER_PIXEL))) << " ";
-        }
-        // cout << endl << endl;
-        for (int x = 2; x < width * BYTES_PER_PIXEL; x += 3) {
-                // cout << image[i][x / BYTES_PER_PIXEL] << " ";
-                // cout << row[x] * 1 << " ";
-                // cout << row[x / BYTES_PER_PIXEL] * 1 << " ";
-                // cout << (char)(row[x] >> (8 * (x % BYTES_PER_PIXEL))) << " ";
-            }
-        // cout << endl << endl;
-        }
         fwrite(row, BYTES_PER_PIXEL, width, imageFile);
         fwrite(padding, 1, paddingSize, imageFile);
     }
-    // cout << endl;
 
     fclose(imageFile);
 }
