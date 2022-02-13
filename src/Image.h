@@ -23,8 +23,12 @@ public:
     }
 
     void set_pixel(int x, int y, unsigned char r, unsigned char g, unsigned char b) {
+        if (x < 0 || x >= _width || y < 0 || y >= _height) {
+            return;
+        }
         uint res = (r << 16) | (g << 8) | b;
-        this->_arr[_height - y - 1][x] = res;
+        // this->_arr[_height - y - 1][x] = res;
+        this->_arr[y][x] = res;
     }
 
     void save(string filename) {

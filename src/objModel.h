@@ -28,11 +28,9 @@ public:
 
 class ObjModel
 {
-private:
+public:
     vector<Point> points;
     vector<Face> faces;
-
-public:
     ObjModel(const char *fileName)
     {
         ifstream fin;

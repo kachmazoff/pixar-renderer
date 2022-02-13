@@ -42,6 +42,7 @@ class RelativeLiner : public Liner
 
 class SteepLiner : public Liner
 {
+public:
     void draw(int x0, int y0, int x1, int y1, Image &image)
     {
         bool steep = abs(x0 - x1) < abs(y0 - y1);
