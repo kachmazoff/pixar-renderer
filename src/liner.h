@@ -32,7 +32,7 @@ class RelativeLiner : public Liner
 public:
     void draw(int x0, int y0, int x1, int y1, Image &image)
     {
-        for (size_t x = x0; x <= x1; ++x)
+        for (int x = x0; x <= x1; ++x)
         {
             float t = float(x - x0) / (x1 - x0);
             int y = y0 * (1. - t) + y1 * t;
@@ -59,7 +59,7 @@ public:
             swap(y0, y1);
         }
 
-        for (size_t x = x0; x <= x1; ++x)
+        for (int x = x0; x <= x1; ++x)
         {
             float t = float(x - x0) / (x1 - x0);
             int y = y0 * (1. - t) + y1 * t;
