@@ -1,32 +1,27 @@
 #include <iostream>
+#include <cmath>
 #include <vector>
 #include "./Image.h"
+#include "./liner.h"
 
 using namespace std;
 
-int main () {
-    Image img(512);
-    for (int y = 0; y < img.height(); ++y) {
-        for (int x = 0; x < img.width(); ++x) {
-            unsigned char q = (unsigned char) ((x + y) % 256);
-            img.set_pixel(x, y, q, q, q);
-        }
+void drawStar(Image &image, Liner &liner)
+{
+    int x0 = 100, y0 = x0;
+    for (size_t i = 0; i < 12; ++i)
+    {
+        float alpha = 2 * M_PI * i / 13;
+        int x1 = x0 + 95 * cos(alpha), y1 = y0 + 95 * sin(alpha);
+        liner.draw(x0, y0, x1, y1, image);
     }
-    img.save("chpok.bmp");
+}
 
-
-    for (int step = 0; step < 0; ++step) {
-
-        Image img(128  + step * 2);
-        for (int y = 0; y < img.height(); ++y) {
-            for (int x = 0; x < img.width(); ++x) {
-                unsigned char q = (unsigned char) ((x + y) % 256);
-                img.set_pixel(x, y, q, q, q);
-            }
-        }
-        img.save("chpok.bmp");
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
+int main()
+{
+    Image image(200);
+    SteepLiner liner = SteepLiner();
+    drawStar(image, liner);
+    image.save("prikol.bmp");
     return 0;
 }
