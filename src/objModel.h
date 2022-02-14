@@ -23,7 +23,7 @@ private:
 
 public:
     Face(vector<int> pointNums) : _pointNums(pointNums){};
-    const vector<int>& getPointNums() { return _pointNums; }
+    const vector<int> &getPointNums() { return _pointNums; }
 };
 
 class ObjModel

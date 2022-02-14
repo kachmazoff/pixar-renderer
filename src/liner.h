@@ -6,7 +6,7 @@ using namespace std;
 class Liner
 {
 public:
-    virtual void draw(int x0, int y0, int x1, int y1, Image &image) = 0;
+    virtual void draw(int x0, int y0, int x1, int y1, Image &image) const = 0;
 };
 
 class SimpleLiner : public Liner
@@ -18,7 +18,7 @@ public:
     SimpleLiner() : _delta(.01) {}
     SimpleLiner(float delta) : _delta(delta) {}
 
-    void draw(int x0, int y0, int x1, int y1, Image &image)
+    void draw(int x0, int y0, int x1, int y1, Image &image) const
     {
         for (float t = 0.; t < 1.; t += _delta)
         {
@@ -32,7 +32,7 @@ public:
 class RelativeLiner : public Liner
 {
 public:
-    void draw(int x0, int y0, int x1, int y1, Image &image)
+    void draw(int x0, int y0, int x1, int y1, Image &image) const
     {
         for (int x = x0; x <= x1; ++x)
         {
@@ -46,7 +46,7 @@ public:
 class SteepLiner : public Liner
 {
 public:
-    void draw(int x0, int y0, int x1, int y1, Image &image)
+    void draw(int x0, int y0, int x1, int y1, Image &image) const
     {
         bool steep = abs(x0 - x1) < abs(y0 - y1);
 
@@ -73,7 +73,7 @@ public:
 class BresenhamLiner : public Liner
 {
 public:
-    void draw(int x0, int y0, int x1, int y1, Image &image)
+    void draw(int x0, int y0, int x1, int y1, Image &image) const
     {
         bool steep = abs(x0 - x1) < abs(y0 - y1);
 
@@ -95,15 +95,16 @@ public:
             dy = y1 - y0,
 
             err = 0,
-            derr = abs(dy) * 2;
+            derr = abs(dy) << 1;
 
-        while (x++ < x1) {
+        while (x++ < x1)
+        {
             steep ? image.set_pixel(y, x, green) : image.set_pixel(x, y, green);
             err += derr;
             if (err > dx)
             {
                 y += y1 > y0 ? 1 : -1;
-                err -= dx * 2;
+                err -= dx << 1;
             }
         }
     }
