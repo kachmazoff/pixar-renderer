@@ -28,10 +28,34 @@ public:
 
 class ObjModel
 {
-public:
+private:
     vector<Point> points;
     vector<Face> faces;
-    ObjModel(const char *fileName)
+
+    bool isInside(const int &px_x,
+                  const int &px_y,
+                  const vector<float> &x,
+                  const vector<float> &y)
+    {
+        bool checkInside = true;
+        // Find barycentric coords for given pixel
+        for (size_t i = 0; i < 3 && checkInside; i++)
+        {
+            float mulX = (x[(i + 1) % 3] - x[(i + 2) % 3]),
+                  mulY = (y[(i + 1) % 3] - y[(i + 2) % 3]);
+
+            float lambda =
+                ((px_y - y[(i + 2) % 3]) * mulX - (px_x - x[(i + 2) % 3]) * mulY) /
+                ((y[i] - y[(i + 2) % 3]) * mulX - (x[i] - x[(i + 2) % 3]) * mulY);
+
+            if (lambda < 0)
+                checkInside = false;
+        }
+        return checkInside;
+    }
+
+public:
+    ObjModel(const string fileName)
     {
         ifstream fin;
         fin.open(fileName, ios::in);
@@ -64,6 +88,86 @@ public:
             }
         }
         fin.close();
+    }
+
+    void rasterize(
+        Image &image,
+        const float &ZOOM = 1,
+        const int &CAM_X_OFFSET = 0,
+        const int &CAM_Y_OFFSET = 0)
+    {
+        for (size_t f = 0; f < faces.size(); ++f)
+        {
+            const vector<int> &pointNums = faces[f].getPointNums();
+            vector<float> x, y;
+
+            // Get face's points coords in arrays (for convenience)
+            for (size_t p = 0; p < pointNums.size(); ++p)
+            {
+                x.push_back(points[pointNums[p]].x() * ZOOM + CAM_X_OFFSET);
+                y.push_back(points[pointNums[p]].y() * ZOOM + CAM_Y_OFFSET);
+            }
+
+            // Find bounding box (with clamping according to image dimensions)
+            float x_min = max(*min_element(x.begin(), x.end()), float(0)),
+                  x_max = min(*max_element(x.begin(), x.end()), float(image.width())),
+
+                  y_min = max(*min_element(y.begin(), y.end()), float(0)),
+                  y_max = min(*max_element(y.begin(), y.end()), float(image.height()));
+
+            /**
+             * TODO delete random colors -> change to lightning && backface culling
+             */
+            srand(f);
+            int r_rand = rand() % 255, g_rand = rand() % 255, b_rand = rand() % 255;
+
+            // For every pixel in bb decide: draw or not
+            for (size_t px_x = x_min; px_x < x_max; ++px_x)
+            {
+                for (size_t px_y = y_min; px_y < y_max; ++px_y)
+                {
+                    if (isInside(px_x, px_y, x, y))
+                    {
+                        image.set_pixel(px_x, px_y, color(r_rand, g_rand, b_rand));
+                    }
+                }
+            }
+        }
+    }
+
+    void wireframe(
+        Image &image,
+        const float &ZOOM = 1,
+        const int &CAM_X_OFFSET = 0,
+        const int &CAM_Y_OFFSET = 0)
+    {
+        std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
+
+        BresenhamLiner liner;
+        for (size_t f = 0; f < faces.size(); ++f)
+        {
+            const vector<int> &pointNums = faces[f].getPointNums();
+
+            for (size_t p = 0; p < pointNums.size(); ++p)
+            {
+                uint start_point_index = pointNums[p];
+                uint end_point_index = pointNums[(p + 1) % pointNums.size()];
+
+                Point start_point = points[start_point_index];
+                Point end_point = points[end_point_index];
+
+                liner.draw(
+                    start_point.x() * ZOOM + CAM_X_OFFSET,
+                    start_point.y() * ZOOM + CAM_Y_OFFSET,
+                    end_point.x() * ZOOM + CAM_X_OFFSET,
+                    end_point.y() * ZOOM + CAM_Y_OFFSET,
+                    image);
+            }
+        }
+
+        std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
+        std::chrono::duration<double> diff = end - start;
+        std::cout << "Time: " << diff.count() * 1000 << " ms\n";
     }
 
     string stringify() // For debug
