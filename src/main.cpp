@@ -18,7 +18,8 @@ int main(int argc, char **argv) {
     // string filename = "storm_trooper_triang";
     ObjModel model("./obj/" + filename + ".obj");
 
-    model.rasterize(image, 2500, image.width() / 2, image.height() / 2 - 1220);
+    // model.rasterize(image, 800, image.width() / 2, image.height() / 2);
+    model.rasterize(image, 800, image.width() / 2, image.height() / 2);
 
     image.save("./res/rend_" + filename + ".bmp");
     return 0;

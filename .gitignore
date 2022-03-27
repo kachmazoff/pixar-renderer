@@ -5,3 +5,4 @@ main
 Makefile
 *.bmp
 .vscode
+obj/prikol18+.obj
