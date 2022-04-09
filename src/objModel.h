@@ -190,10 +190,13 @@ public:
         Image &image,
         const float &ZOOM = 1,
         const int &CAM_X_OFFSET = 0,
-        const int &CAM_Y_OFFSET = 0)
+        const int &CAM_Y_OFFSET = 0,
+        float angle_beta = 3.14)
     {
         const float PI = 3.14;
-        float angle_alpha = 0 , angle_beta = PI, angle_gamma = 0;
+        // float angle_alpha = PI / 10, angle_beta = 3 * PI / 4, angle_gamma = 0;
+        float angle_alpha = PI / 10, angle_gamma = 0;
+        // float angle_alpha = 0 , angle_beta = 0, angle_gamma = 0;
 
         vector<vector<float> > A(3, vector<float>(3, 0));
         A[0][0] = 1;
@@ -219,6 +222,7 @@ public:
         {
             const vector<int> &pointNums = faces[f].getPointNums();
             vector<float> x, y, z;
+            vector<Vector3D> norm;
 
             // Get face's points coords in arrays (for convenience)
             for (size_t p = 0; p < pointNums.size(); ++p)
@@ -230,10 +234,8 @@ public:
                 y.push_back(new_coords[1] * ZOOM / curr_z * focus + CAM_Y_OFFSET);
                 z.push_back(curr_z * ZOOM);
 
-                // float curr_z = points[pointNums[p]].z() + 1;
-                // x.push_back(points[pointNums[p]].x() * ZOOM / curr_z + CAM_X_OFFSET);
-                // y.push_back(points[pointNums[p]].y() * ZOOM / curr_z + CAM_Y_OFFSET);
-                // z.push_back(curr_z * ZOOM);
+                vector<float> new_normal = mul(R, normals[pointNums[p]]);
+                norm.push_back(Vector3D(new_normal[0], new_normal[1], new_normal[2]));
             }
 
             // Find bounding box (with clamping according to image dimensions)
@@ -250,14 +252,17 @@ public:
             Vector3D res = (v1 - v0) * (v1 - v2);
             Vector3D cam(0, 0, 1);
             float ang = angle(res, cam);
+            float ang1 = angle(norm[0], cam);
+            float ang2 = angle(norm[1], cam);
+            float ang3 = angle(norm[2], cam);
 
             if (ang <= 0)
             {
                 continue;
             }
 
-            int q = int(ang * 255) & 255;
-            uint curr_color = (q << 16 | q << 8 | q);
+            // int q = int(ang * 255) & 255;
+            // uint curr_color = (q << 16 | q << 8 | q);
 
             // For every pixel in bb decide: draw or not
             for (size_t px_x = x_min; px_x < x_max; ++px_x)
@@ -267,33 +272,14 @@ public:
                     vector<float> coords = barycentric_coords(px_x, px_y, x, y);
                     if (is_inside(coords))
                     {
+                        int q = 255 - int((ang1 * coords[0] + ang2 * coords[1] + ang3 * coords[2]) * 255) & 255;
+                        uint curr_color = (q << 16 | q << 8 | q);
+
                         float curr_z = z[0] * coords[0] + z[1] * coords[1] + z[2] * coords[2];
                         image.set_pixel(px_x, px_y, curr_z * cam.z(), curr_color);
                     }
                 }
             }
         }
-    }
-
-    string stringify() // For debug
-    {
-        string out;
-        out += "points: " + to_string(points.size()) + ", faces: " + to_string(faces.size()) + "\n";
-        for (size_t i = 0; i < points.size(); i++)
-        {
-            out += "v " +
-                   to_string(points[i].x()) + " " +
-                   to_string(points[i].y()) + " " +
-                   to_string(points[i].z()) + "\n";
-        }
-        for (size_t i = 0; i < faces.size(); i++)
-        {
-            vector<int> pointNums = faces[i].getPointNums();
-            out += "f " +
-                   to_string(pointNums[0]) + " " +
-                   to_string(pointNums[1]) + " " +
-                   to_string(pointNums[2]) + "\n";
-        }
-        return out;
     }
 };
