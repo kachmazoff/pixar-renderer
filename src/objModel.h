@@ -113,6 +113,7 @@ class ObjModel
 private:
     vector<Point> points;
     vector<Face> faces;
+    vector<Point> normals;
 
     // Find barycentric coords for given pixel
     vector<float> barycentric_coords(const int &px_x, const int &px_y, const vector<float> &x, const vector<float> &y)
@@ -175,6 +176,12 @@ public:
                 }
                 faces.push_back(Face(pointNums));
             }
+            else if (skip == "vn") // Parse normals
+            {
+                float x, y, z;
+                ss >> x >> y >> z;
+                normals.push_back(Point(x, y, z));
+            }
         }
         fin.close();
     }
@@ -186,7 +193,7 @@ public:
         const int &CAM_Y_OFFSET = 0)
     {
         const float PI = 3.14;
-        float angle_alpha = -PI / 5 , angle_beta = PI / 2, angle_gamma = 0;
+        float angle_alpha = 0 , angle_beta = PI, angle_gamma = 0;
 
         vector<vector<float> > A(3, vector<float>(3, 0));
         A[0][0] = 1;
@@ -205,6 +212,9 @@ public:
 
         vector<vector<float> > R = mul(mul(A, B), C);
 
+        float focus = 500;
+        float dist = focus;
+
         for (size_t f = 0; f < faces.size(); ++f)
         {
             const vector<int> &pointNums = faces[f].getPointNums();
@@ -215,9 +225,9 @@ public:
             {
                 vector<float> new_coords = mul(R, points[pointNums[p]]);
 
-                float curr_z = new_coords[2] + 1;
-                x.push_back(new_coords[0] * ZOOM / curr_z + CAM_X_OFFSET);
-                y.push_back(new_coords[1] * ZOOM / curr_z + CAM_Y_OFFSET);
+                float curr_z = new_coords[2] + dist;
+                x.push_back(new_coords[0] * ZOOM / curr_z * focus + CAM_X_OFFSET);
+                y.push_back(new_coords[1] * ZOOM / curr_z * focus + CAM_Y_OFFSET);
                 z.push_back(curr_z * ZOOM);
 
                 // float curr_z = points[pointNums[p]].z() + 1;
